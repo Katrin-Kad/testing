@@ -1,0 +1,63 @@
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import { expect, describe, it, beforeEach, afterEach, jest } from '@jest/globals'; 
+import 'jest-snapshot';
+import '@testing-library/jest-dom';
+import { Home } from "../../src/client/pages/Home";
+import { Delivery } from "../../src/client/pages/Delivery";
+import { Contacts } from "../../src/client/pages/Contacts";
+import { ProductItem } from "../../src/client/components/ProductItem";
+import { ExampleStore } from '../../src/server/data';
+import { Catalog } from '../../src/client/pages/Catalog';
+import { useDispatch, useSelector } from 'react-redux';
+
+// Mock the dependencies
+jest.mock('react-redux', () => ({
+  useDispatch: jest.fn(),
+  useSelector: jest.fn(),
+}));
+jest.mock('../../../../src/client/components/ProductItem', () => ({
+  ProductItem: jest.fn(() => <div data-testid="product-item" />),
+}));
+
+const mockDispatch = jest.fn();
+const mockProduct = { id: 1, name: 'Test Product' };
+
+beforeEach(() => {
+  jest.mocked(useDispatch).mockReturnValue(mockDispatch);
+  jest.mocked(useSelector).mockImplementation(selector => selector({
+      products: [mockProduct],
+  }));
+});
+
+afterEach(() => {
+  jest.clearAllMocks();
+});
+
+describe('Страницы', () => {
+  it('главная страница должна иметь статическое содержимое', async () => {
+    const { container } = render(<Home />);
+    expect(container).toMatchSnapshot();
+  });
+
+  it('страница с условиями доставки должна иметь статическое содержимое', async () => {
+    const { container } = render(<Delivery />);
+    expect(container).toMatchSnapshot();
+  });
+
+  it('страница с контактами должна иметь статическое содержимое', async () => {
+    const { container } = render(<Contacts />);
+    expect(container).toMatchSnapshot();
+  });
+});
+
+describe('Каталог', () => {
+  describe('в каталоге должны отображаться товары, список которых приходит с сервера', () => {
+    it('список товаров приходит с сервера', () => {
+      const store = new ExampleStore();
+      expect(store.getAllProducts(0).length).toBe(27);
+    });
+
+    
+  });
+});
